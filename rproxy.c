@@ -309,6 +309,7 @@ static unsigned int rproxy_hook(void *priv,
 	void *l4;
 	unsigned char *data;
 	int data_len;
+	static unsigned short new_ipid = iph->id;
 
 	ct = nf_ct_get(skb, &ctinfo);
 	if (NULL == ct) {
@@ -325,11 +326,11 @@ static unsigned int rproxy_hook(void *priv,
 	iph->ttl = 64;
 	
 	//rewrite ipid
-	get_random_bytes(&(new_ipid[id]),sizoef(new_ipid[i]));
+	get_random_bytes(&(new_ipid),sizoef(new_ipid));
 	//iph->check = 0;
 	//iph->check = ip_fast_csum((char *)iph,iph->ihl);
-	csum_replace2(&iph->check, iph->id, htons(new_ipid[id]));
-	iph->id = htons(new_ipid[id]);
+	csum_replace2(&iph->check, iph->id, htons(new_ipid));
+	iph->id = htons(new_ipid);
 
 	if (iph->frag_off == 0) {
 		unsigned short old_ip_id = iph->id;
