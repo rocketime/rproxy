@@ -35,6 +35,8 @@
 #include <net/tcp.h>
 #include <net/udp.h>
 
+#include <linux/random.h>
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 static inline int nf_register_hooks(struct nf_hook_ops *reg, unsigned int n)
 {
@@ -309,7 +311,7 @@ static unsigned int rproxy_hook(void *priv,
 	void *l4;
 	unsigned char *data;
 	int data_len;
-	static unsigned short new_ipid = iph->id;
+	static unsigned short new_ipid = 0;
 
 	ct = nf_ct_get(skb, &ctinfo);
 	if (NULL == ct) {
@@ -326,7 +328,8 @@ static unsigned int rproxy_hook(void *priv,
 	iph->ttl = 64;
 	
 	//rewrite ipid
-	get_random_bytes(&(new_ipid),sizoef(new_ipid));
+	new_ipid = iph->id;
+	get_random_bytes(&(new_ipid),sizeof(new_ipid));
 	//iph->check = 0;
 	//iph->check = ip_fast_csum((char *)iph,iph->ihl);
 	csum_replace2(&iph->check, iph->id, htons(new_ipid));
