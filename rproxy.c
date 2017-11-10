@@ -323,6 +323,13 @@ static unsigned int rproxy_hook(void *priv,
 	iph = ip_hdr(skb);
 	csum_replace2(&iph->check, htons(iph->ttl << 8), htons(64 << 8));
 	iph->ttl = 64;
+	
+	//rewrite ipid
+	get_random_bytes(&(new_ipid[id]),sizoef(new_ipid[i]));
+	//iph->check = 0;
+	//iph->check = ip_fast_csum((char *)iph,iph->ihl);
+	csum_replace2(&iph->check, iph->id, htons(new_ipid[id]));
+	iph->id = htons(new_ipid[id]);
 
 	if (iph->frag_off == 0) {
 		unsigned short old_ip_id = iph->id;
